@@ -1,0 +1,142 @@
+{
+  "protocol": "ordifi-utxo-contract",
+  "version": 1,
+  "type": "pawn",
+
+  "contract": {
+    "title": "Pawn Contract",
+    "description": "Bitcoin L1 collateral agreement using blockheight-based actions."
+  },
+
+  "parties": {
+    "borrower": {
+      "paymentAddress": "bc1qBORROWER_PAYMENT",
+      "ordinalsAddress": "bc1pBORROWER_ORDINALS"
+    },
+
+    "lender": {
+      "paymentAddress": "bc1qLENDER_PAYMENT",
+      "ordinalsAddress": "bc1pLENDER_ORDINALS"
+    }
+  },
+
+  "collateral": {
+    "inscriptionId": "COLLATERAL_INSCRIPTION_ID"
+  },
+
+  "loan": {
+    "principalSats": 50000,
+    "repaymentSats": 55000
+  },
+
+  "timing": {
+    "redeemUntilBlock": 980000,
+    "claimFromBlock": 980001
+  },
+
+  "actions": {
+    "activate": {
+      "operation": "insert",
+
+      "conditions": [
+        {
+          "type": "collateral_owner",
+          "inscriptionId": "collateral.inscriptionId",
+          "owner": "borrower.ordinalsAddress"
+        },
+        {
+          "type": "payment",
+          "amountSats": 50000,
+          "from": "lender",
+          "to": "borrower.paymentAddress"
+        }
+      ],
+
+      "effects": [
+        {
+          "type": "insert",
+          "id": "collateral.inscriptionId",
+          "destination": "machine"
+        },
+        {
+          "type": "insert",
+          "id": "contract",
+          "destination": "machine"
+        }
+      ],
+
+      "requiredSignatures": [
+        "borrower",
+        "lender"
+      ]
+    },
+
+    "redeem": {
+      "operation": "extract",
+
+      "conditions": [
+        {
+          "type": "block_height_max",
+          "value": 980000
+        },
+        {
+          "type": "payment",
+          "amountSats": 55000,
+          "from": "borrower",
+          "to": "lender.paymentAddress"
+        }
+      ],
+
+      "effects": [
+        {
+          "type": "extract",
+          "id": "collateral.inscriptionId",
+          "destination": "borrower.ordinalsAddress"
+        },
+        {
+          "type": "extract",
+          "id": "contract",
+          "destination": "borrower.ordinalsAddress"
+        }
+      ],
+
+      "requiredSignatures": [
+        "borrower"
+      ]
+    },
+
+    "claim": {
+      "operation": "extract",
+
+      "conditions": [
+        {
+          "type": "block_height_min",
+          "value": 980001
+        }
+      ],
+
+      "effects": [
+        {
+          "type": "extract",
+          "id": "collateral.inscriptionId",
+          "destination": "lender.ordinalsAddress"
+        },
+        {
+          "type": "extract",
+          "id": "contract",
+          "destination": "lender.ordinalsAddress"
+        }
+      ],
+
+      "requiredSignatures": [
+        "lender"
+      ]
+    }
+  },
+
+  "lifecycle": {
+    "activeState": "machine_contains_contract_and_collateral",
+    "redeemState": "collateral_to_borrower",
+    "claimState": "collateral_to_lender"
+  }
+}
