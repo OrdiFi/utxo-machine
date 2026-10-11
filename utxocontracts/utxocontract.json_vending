@@ -2,44 +2,37 @@
   "protocol": "ordifi-utxo-contract",
   "version": 1,
   "type": "vending",
-
   "contract": {
     "title": "Vending Contract",
     "description": "Sale contract for one inscription or Machine asset."
   },
-
   "parties": {
-    "seller": {
-      "paymentAddress": "bc1qSELLER_PAYMENT",
-      "ordinalsAddress": "bc1pSELLER_ORDINALS"
-    },
     "buyer": {
       "paymentAddress": "actor.paymentAddress",
       "ordinalsAddress": "actor.ordinalsAddress"
     }
   },
-
   "asset": {
     "inscriptionId": "ASSET_INSCRIPTION_ID"
   },
-
+  "settlement": {
+    "salePaymentAddress": "bc1qd5fjvy7x2vsvkpqxc4ec30kgqqedvm8n44ewju",
+    "contractArchiveAddress": "bc1pg0cpn3z260gr27yr7sgdmd2pdw6sk4wrdepq6pewrxnth7rvka8srn0v06"
+  },
   "terms": {
     "priceSats": 100000
   },
-
   "actions": {
     "buy": {
       "operation": "extract",
-
       "conditions": [
         {
           "type": "payment",
           "amountSats": 100000,
           "from": "buyer",
-          "to": "seller.paymentAddress"
+          "to": "settlement.salePaymentAddress"
         }
       ],
-
       "effects": [
         {
           "type": "extract",
@@ -49,18 +42,15 @@
         {
           "type": "extract",
           "id": "contract",
-          "destination": "buyer.ordinalsAddress"
+          "destination": "settlement.contractArchiveAddress"
         }
       ],
-
       "requiredSignatures": [
-        "buyer",
-        "seller"
+        "buyer"
       ]
     }
   },
-
   "lifecycle": {
-    "contract": "extract_to_buyer"
+    "contract": "extract_to_archive"
   }
 }
